@@ -1,0 +1,49 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import ast
+import re
+
+data = pd.read_csv('fls-data.csv')
+
+data["zip_code"] = data["zip_code"].astype(np.int64)
+lat = []
+lon = []
+
+for index,value in data['store_location'].items():
+    coord = re.findall(r"-*\d*\.\d*",str(value))
+    if coord != []:
+      lat.append(str(coord[0]))
+      lon.append(str(coord[1]))
+    else :
+      lat.append('')
+      lon.append('')
+data["store_location_lat"] = pd.Series(lat)
+data["store_location_lon"] = pd.Series(lon)
+
+data['profit_of_sale'] = (data["state_bottle_retail"]-data["state_bottle_cost"])*data["bottles_sold"]
+
+
+Most_Pop_Zip = data.groupby(['zip_code','item_description'])['bottles_sold'].max()
+
+
+data.to_csv(r'F:\Reading Content\Data Science Summer School\Python & TensorFlow\Python\data_final.csv',index=True,header=True)
+Most_Pop_Zip.to_csv(r'F:\Reading Content\Data Science Summer School\Python & TensorFlow\Python\Most_Pop_Zip1.csv',index=True,header=True)
+
+
+
+
+
+sumofsales = sum(data["sale_dollars"])
+storenames = data["store_name"]
+out2 = data.groupby("store_name")
+#out2['perc of sales'] = (out2['sale_dollars']/out2['sale_dollars'].sum())*100
+out2 = out2.agg({'sale_dollars': 'sum'})
+out2['perc of sales'] = out2['sale_dollars']/out2['sale_dollars'].sum()
+out2.sort_values(by=['perc of sales'],inplace=True)
+
+
+
+
+
+out2.to_csv(r'F:\Reading Content\Data Science Summer School\Python & TensorFlow\Python\Perc of Sales.csv',index=True,header=True)
